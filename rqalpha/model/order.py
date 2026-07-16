@@ -109,7 +109,7 @@ class Order(object):
     def __getstate__(self):
         """ Order 对象中存储的 Environment 会导致 Order 在进行序列化时出问题，需要筛选序列化的内容 """
         return self.get_state()
-    
+
     def __setstate__(self, state):
         self._env = Environment.get_instance()
         self.set_state(state)
@@ -120,7 +120,7 @@ class Order(object):
         order = cls()
         order._env = env
         order._order_id = next(order.order_id_gen)
-        order._secondary_order_id = None 
+        order._secondary_order_id = None
         order._calendar_dt = env.calendar_dt
         order._trading_dt = env.trading_dt
         order._quantity = quantity
@@ -151,8 +151,7 @@ class Order(object):
         return order
 
     @property
-    def order_id(self):
-        # type: () -> int
+    def order_id(self) -> int:
         """
         [int] 唯一标识订单的id
         """
@@ -203,8 +202,7 @@ class Order(object):
         return self._order_book_id
 
     @property
-    def side(self):
-        # type: () -> SIDE
+    def side(self) -> SIDE:
         """
         [SIDE] 订单方向
         """
@@ -223,8 +221,7 @@ class Order(object):
         return self._position_effect
 
     @property
-    def position_direction(self):
-        # type: () -> POSITION_DIRECTION
+    def position_direction(self) -> POSITION_DIRECTION:
         return get_position_direction(self._side, self._position_effect)
 
     @property
@@ -306,11 +303,11 @@ class Order(object):
     @property
     def kwargs(self):
         return self._kwargs
-    
+
     @cached_property
     def instrument(self) -> Instrument:
         return self._env.data_proxy.instrument_not_none(self._order_book_id)
-    
+
     @cached_property
     def market(self) -> MARKET:
         return self.instrument.market
