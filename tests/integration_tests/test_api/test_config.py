@@ -68,7 +68,7 @@ def test_futures_info():
             }
         }
     })
-    
+
     def init(context):
         context.f1 = "SC1809"
         subscribe_event(EVENT.TRADE, on_trade)
@@ -94,6 +94,7 @@ def test_futures_info():
     run_func(config=config, init=init, handle_bar=handle_bar)
 
 
+
 def test_init_position():
     config = _config({
         "base": {
@@ -103,7 +104,7 @@ def test_init_position():
             "init_positions": "000006.XSHE:10000"
         }
     })
-    
+
     def before_trading(context):
         if context.now.date() == date(2018, 4, 2):
             # 首个交易日，持仓价格应为昨收
@@ -117,3 +118,72 @@ def test_init_position():
         assert stock_position.quantity == 10000
 
     run_func(config=config, before_trading=before_trading, init=init)
+
+
+def test_partial_fill_on_insufficient_cash():
+    config = _config({
+        "base": {
+            "accounts": {
+                "stock": 100000,
+                "future": 600000
+            },
+            "partial_fill_on_insufficient_cash": True
+        }
+    })
+
+    def init(context):
+        context.s1 = "000001.XSHE"
+        context.f1 = "IF1805"
+        context.counter = 0
+
+    def handle_bar(context, bar_dict):
+        context.counter += 1
+        if context.counter == 1:
+            order_shares(context.s1, 5000)
+            buy_open(context.f1, 2)
+            assert get_position(context.s1).quantity == 5000
+            assert get_position(context.f1).quantity == 2
+        elif context.counter == 2:
+            order_shares(context.s1, 5000)
+            buy_open(context.f1, 2)
+            assert get_position(context.s1).quantity == 9300
+            assert get_position(context.f1).quantity == 3
+
+    run_func(config=config, init=init, handle_bar=handle_bar)
+
+
+def test_partial_fill_on_insufficient_cash_with_signal():
+    config = _config({
+        "base": {
+            "accounts": {
+                "stock": 100000,
+                "future": 600000
+            },
+            "partial_fill_on_insufficient_cash": True
+        },
+        "mod": {
+            "sys_simulation": {
+                "signal": True
+            }
+        }
+    })
+
+    def init(context):
+        context.s1 = "000001.XSHE"
+        context.f1 = "IF1805"
+        context.counter = 0
+
+    def handle_bar(context, bar_dict):
+        context.counter += 1
+        if context.counter == 1:
+            order_shares(context.s1, 5000)
+            buy_open(context.f1, 2)
+            assert get_position(context.s1).quantity == 5000
+            assert get_position(context.f1).quantity == 2
+        elif context.counter == 2:
+            order_shares(context.s1, 5000)
+            buy_open(context.f1, 2)
+            assert get_position(context.s1).quantity == 9300
+            assert get_position(context.f1).quantity == 3
+
+    run_func(config=config, init=init, handle_bar=handle_bar)

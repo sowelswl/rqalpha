@@ -22,7 +22,8 @@ from rqalpha.utils.logger import user_system_log
 from rqalpha.utils.i18n import gettext as _
 from rqalpha.core.events import EVENT, Event
 from rqalpha.core.execution_context import ExecutionContext
-from rqalpha.const import POSITION_EFFECT, INSTRUMENT_TYPE, EXECUTION_PHASE
+from rqalpha.const import POSITION_EFFECT, INSTRUMENT_TYPE, EXECUTION_PHASE, ORDER_STATUS
+from rqalpha.model import Order
 from rqalpha.utils.functools import lru_cache
 from rqalpha.environment import Environment
 
@@ -30,8 +31,8 @@ from .matcher import AbstractMatcher, SignalMatcher
 
 
 class SignalBroker(AbstractBroker):
-    def __init__(self, env: Environment, mod_config):
-        self._signal_default_matcher: AbstractMatcher = SignalMatcher(env, mod_config)
+    def __init__(self, env: Environment, mod_config, partial_fill_on_insufficient_cash: bool = False):
+        self._signal_default_matcher: AbstractMatcher = SignalMatcher(env, mod_config, partial_fill_on_insufficient_cash)
         self._env: Environment = env
         self._matchers: Dict[INSTRUMENT_TYPE, AbstractMatcher] = {}
 
@@ -46,7 +47,7 @@ class SignalBroker(AbstractBroker):
     def get_open_orders(self, order_book_id=None):
         return []
 
-    def submit_order(self, order):
+    def submit_order(self, order: Order):
         if order.position_effect == POSITION_EFFECT.EXERCISE:
             raise NotImplementedError("SignalBroker does not support exercise order temporarily")
         account = self._env.get_account(order.order_book_id)
@@ -57,6 +58,10 @@ class SignalBroker(AbstractBroker):
         self._env.event_bus.publish_event(Event(EVENT.ORDER_CREATION_PASS, account=account, order=order))
         open_auction = ExecutionContext.phase() == EXECUTION_PHASE.OPEN_AUCTION
         self._get_matcher(order.order_book_id).match(account=account, order=order, open_auction=open_auction)
+
+        if order.is_final():
+            if order.status == ORDER_STATUS.REJECTED or order.status == ORDER_STATUS.CANCELLED:
+                self._env.event_bus.publish_event(Event(EVENT.ORDER_UNSOLICITED_UPDATE, account=account, order=order))
 
     def cancel_order(self, order):
         user_system_log.warning(_(u"cancel_order function is not supported in signal mode"))

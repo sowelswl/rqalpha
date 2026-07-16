@@ -14,33 +14,7 @@
 #         否则米筐科技有权追究相应的知识产权侵权责任。
 #         在此前提下，对本软件的使用同样需要遵守 Apache 2.0 许可，Apache 2.0 许可与本许可冲突之处，以本许可为准。
 #         详细的授权流程，请联系 public@ricequant.com 获取。
-
-
-from rqalpha.interface import AbstractMod
-from rqalpha.const import RUN_TYPE
-from rqalpha.utils.i18n import gettext as _
-from rqalpha.utils.logger import user_system_log
-
-from .validators import CashValidator, PriceValidator, IsTradingValidator, SelfTradeValidator
-
-
-class RiskManagerMod(AbstractMod):
-    def start_up(self, env, mod_config):
-        partial_fill_on_insufficient_cash = getattr(env.config.base, "partial_fill_on_insufficient_cash", False)
-        if partial_fill_on_insufficient_cash and not mod_config.validate_cash:
-            user_system_log.warning(_(
-                "partial_fill_on_insufficient_cash is enabled, while validate_cash has been explicitly disabled. Please confirm that this configuration is intended."
-            ))
-
-        if mod_config.validate_price:
-            env.add_frontend_validator(PriceValidator(env))
-        if mod_config.validate_is_trading:
-            env.add_frontend_validator(IsTradingValidator(env))
-        if mod_config.validate_cash:
-            if not partial_fill_on_insufficient_cash or env.config.base.run_type == RUN_TYPE.LIVE_TRADING:
-                env.add_frontend_validator(CashValidator(env))
-        if mod_config.validate_self_trade:
-            env.add_frontend_validator(SelfTradeValidator(env))
-
-    def tear_down(self, code, exception=None):
-        pass
+from .base import AbstractMatcher, BaseMatcher
+from .bar_matcher import DefaultBarMatcher
+from .tick_matcher import DefaultTickMatcher, CounterPartyOfferMatcher
+from .signal_matcher import SignalMatcher

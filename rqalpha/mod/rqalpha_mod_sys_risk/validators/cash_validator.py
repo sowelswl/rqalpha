@@ -17,7 +17,7 @@
 from typing import Optional
 
 from rqalpha.interface import AbstractFrontendValidator
-from rqalpha.const import POSITION_EFFECT
+from rqalpha.const import POSITION_EFFECT, DEFAULT_ACCOUNT_TYPE
 from rqalpha.model.order import Order
 from rqalpha.portfolio.account import Account
 from rqalpha.environment import Environment
@@ -40,12 +40,12 @@ def validate_cash(env: Environment, order: Order, cash: float) -> Optional[str]:
 
 
 class CashValidator(AbstractFrontendValidator):
-    def __init__(self, env):
+    def __init__(self, env: Environment):
         self._env = env
 
     def validate_cancellation(self, order: Order, account: Optional[Account] = None) -> Optional[str]:
         return None
-    
+
     def validate_submission(self, order: Order, account: Optional[Account] = None) -> Optional[str]:
         if (account is None) or (order.position_effect != POSITION_EFFECT.OPEN):
             return None
