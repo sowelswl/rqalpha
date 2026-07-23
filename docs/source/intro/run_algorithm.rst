@@ -257,7 +257,20 @@ RQAlpha 在运行策略时候会在当前目录下寻找 `config.yml` 或者  `c
       future_info: {}
       # 强平
       forced_liquidation: true
-
+      # 是否开启期货历史交易参数进行回测，默认为 False
+      futures_time_series_trading_parameters: false
+      # 是否开启在回测过程中自动下载所需的 bundle 数据
+      # 当前支持数据：1. 盘前集合竞价成交量；2. 期货历史交易参数
+      auto_update_bundle: false
+      # 自动下载的 bundle 文件支持单独设置存储路径，若不设置则使用 data_bundle_path 路径
+      auto_update_bundle_path: ~
+      # 一年交易日天数，默认使用DAYS_CNT.TRADING_DAYS_A_YEAR
+      custom_trading_days_a_year: ~
+      # 商品转让增值税及其他税费的费率
+      # 当前版本默认值设置为 0 以向前兼容，将在后续版本中将默认值设置为 0.0318(该取值可见 CapitalGainsTaxMixin 类的说明)
+      capital_gain_tax_rate: 0
+      # 开仓订单在资金不足时进入“尽量成交”逻辑，可用于模拟真实交易中的算法母单执行过程
+      partial_fill_on_insufficient_cash: false
 
     extra:
       # 选择日期的输出等级，有 `verbose` | `info` | `warning` | `error` 等选项，您可以通过设置 `verbose` 来查看最详细的日志，
@@ -268,12 +281,10 @@ RQAlpha 在运行策略时候会在当前目录下寻找 `config.yml` 或者  `c
       # enable_profiler: 是否启动性能分析
       enable_profiler: false
       is_hold: false
-      locale: zh_Hans_CN
+      locale: ~
       logger: []
-
-    validator:
-      # close_amount: 在执行order_value操作时，进行实际下单数量的校验和scale，默认开启
-      close_amount: true
+      # 日志输出文件
+      log_file: ~
 
 .. warning::
 
