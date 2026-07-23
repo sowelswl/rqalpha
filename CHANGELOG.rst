@@ -7,6 +7,7 @@ CHANGELOG
 
 - RQAlpha 支持资金不足时按配置进行订单部分成交
 - 优化 bundle 数据更新框架，支持更新错误信息收集
+- 最低支持 Python 版本提升至 3.8，不再支持 Python 3.7
 
 
 6.2.1

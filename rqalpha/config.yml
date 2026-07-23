@@ -51,7 +51,7 @@ base:
   # 商品转让增值税及其他税费的费率
   # 当前版本默认值设置为 0 以向前兼容，将在后续版本中将默认值设置为 0.0318(该取值可见 CapitalGainsTaxMixin 类的说明)
   capital_gain_tax_rate: 0
-  # 开仓订单在资金不足时进入“尽量成交”逻辑
+  # 开仓订单在资金不足时进入“尽量成交”逻辑，可用于模拟真实交易中的算法母单执行过程
   partial_fill_on_insufficient_cash: false
 
 extra:
